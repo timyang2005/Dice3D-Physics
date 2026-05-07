@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, master ]
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,17 +32,10 @@ jobs:
     - name: Download Gradle Wrapper JAR
       run: |
         if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-          curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar 2>/dev/null || \
-          curl -sL "https://github.com/gradle/gradle/raw/v8.5.0/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar 2>/dev/null || \
-          curl -sL "https://services.gradle.org/distributions/gradle-8.5-bin.zip" -o /tmp/gradle.zip && \
-          unzip -p /tmp/gradle.zip gradle-8.5/lib/gradle-wrapper-*.jar > gradle/wrapper/gradle-wrapper.jar 2>/dev/null || \
-          true
-          if [ ! -s gradle/wrapper/gradle-wrapper.jar ]; then
-            GRADLE_DIST_URL="https://services.gradle.org/distributions/gradle-8.5-bin.zip"
-            curl -sL "$GRADLE_DIST_URL" -o /tmp/gradle.zip
-            unzip -qo /tmp/gradle.zip -d /tmp/gradle
-            /tmp/gradle/gradle-8.5/bin/gradle wrapper --gradle-version 8.5
-          fi
+          GRADLE_DIST_URL="https://services.gradle.org/distributions/gradle-8.5-bin.zip"
+          curl -sL "$GRADLE_DIST_URL" -o /tmp/gradle.zip
+          unzip -qo /tmp/gradle.zip -d /tmp/gradle
+          /tmp/gradle/gradle-8.5/bin/gradle wrapper --gradle-version 8.5
         fi
         chmod +x gradlew
         ls -la gradle/wrapper/
@@ -54,45 +51,41 @@ jobs:
       run: yes | sdkmanager --licenses || true
 
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace 2>&1 | tee build.log
+      run: ./gradlew assembleDebug --stacktrace
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
-      if: success()
       with:
         name: debug-apk
         path: app/build/outputs/apk/debug/*.apk
 
     - name: Build Release APK
-      run: ./gradlew assembleRelease --stacktrace 2>&1 | tee -a build.log
+      run: ./gradlew assembleRelease --stacktrace
 
     - name: Upload Release APK
       uses: actions/upload-artifact@v4
-      if: success()
       with:
         name: release-apk
         path: app/build/outputs/apk/release/*.apk
 
-    - name: Upload Build Log on Failure
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: build-log
-        path: build.log
-
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/download-artifact@v4
       with:
         name: release-apk
         path: ./apk
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: List APK files
+      run: ls -la ./apk/ || echo "No APK files found"
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: v1.0.0
         name: Release v1.0.0

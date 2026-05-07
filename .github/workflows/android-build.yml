@@ -29,22 +29,18 @@ jobs:
     - name: Create local.properties
       run: |
         echo "sdk.dir=$ANDROID_HOME" > local.properties
-        cat local.properties
         echo "ANDROID_HOME=$ANDROID_HOME"
-        echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
 
     - name: Download Gradle
       run: |
         curl -sL https://services.gradle.org/distributions/gradle-8.5-bin.zip -o /tmp/gradle.zip
         unzip -qo /tmp/gradle.zip -d /tmp/gradle
-        /tmp/gradle/gradle-8.5/bin/gradle --version
 
     - name: Download JBullet dependencies
       run: |
         mkdir -p app/libs
         curl -sL "https://github.com/bersaty/SimulateDice/raw/master/app/libs/jbullet.jar" -o app/libs/jbullet.jar
         curl -sL "https://github.com/bersaty/SimulateDice/raw/master/app/libs/vecmath.jar" -o app/libs/vecmath.jar
-        ls -la app/libs/
         file app/libs/jbullet.jar
         file app/libs/vecmath.jar
 
@@ -55,7 +51,6 @@ jobs:
       run: |
         /tmp/gradle/gradle-8.5/bin/gradle wrapper --gradle-version 8.5
         chmod +x gradlew
-        ls -la gradle/wrapper/
         ./gradlew --version
 
     - name: Build Debug APK
@@ -64,29 +59,32 @@ jobs:
         set -o pipefail
         ./gradlew assembleDebug --stacktrace 2>&1 | tee build-output.log
 
-    - name: Output build log to summary
+    - name: Report build errors as annotations
+      if: failure()
+      run: |
+        if [ -f build-output.log ]; then
+          echo "=== EXTRACTING ERRORS FROM BUILD LOG ==="
+          grep -A 5 -i "^e:" build-output.log 2>/dev/null || true
+          echo "=== FAILURE SECTION ==="
+          grep -A 20 "^FAILURE" build-output.log 2>/dev/null || true
+          echo "=== WHAT WENT WRONG ==="
+          grep -A 20 "What went wrong" build-output.log 2>/dev/null || true
+          echo "=== KOTLIN ERRORS ==="
+          grep -i "e: file://" build-output.log 2>/dev/null || true
+          echo "=== ERROR LINES ==="
+          grep -i "error" build-output.log 2>/dev/null | head -30 || true
+        fi
+
+    - name: Output full build log to summary
       if: always()
       run: |
-        echo "## Build Output Log" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
         if [ -f build-output.log ]; then
+          echo "## Build Output Log" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat build-output.log >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-        else
-          echo "No build log found" >> $GITHUB_STEP_SUMMARY
         fi
-
-    - name: List all build outputs
-      if: always()
-      run: |
-        echo "## Build Outputs" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
-        echo "---"
-        ls -laR app/build/outputs/ 2>/dev/null || echo "No outputs directory"
-        echo '```' >> $GITHUB_STEP_SUMMARY
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
@@ -107,9 +105,6 @@ jobs:
         name: apk
         path: ./apk
 
-    - name: List APK files
-      run: find ./apk -name "*.apk" -type f
-
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
@@ -117,16 +112,6 @@ jobs:
         name: Release v1.0.0
         body: |
           3D 物理骰子模拟器 - 首个发布版本
-
-          功能特性:
-          - 基于 JBullet 物理引擎的真实骰子模拟
-          - 支持 D4/D6/D8/D10/D12/D20/D100 七种骰子
-          - OpenGL ES 3.0 3D 渲染，含光照与阴影
-          - 重力感应与甩动手势投掷
-          - 自由视角控制（旋转/缩放/平移）
-          - 深色模式支持
-          - 投掷历史记录与统计
-          - 音效与触觉反馈
         files: ./apk/**/*.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

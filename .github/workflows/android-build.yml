@@ -3,8 +3,6 @@ name: Android CI Build
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
 
 jobs:
   build:
@@ -22,19 +20,18 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-
-    - name: Download Gradle Wrapper JAR
+    - name: Install Android SDK components
       run: |
-        if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-          GRADLE_DIST_URL="https://services.gradle.org/distributions/gradle-8.5-bin.zip"
-          curl -sL "$GRADLE_DIST_URL" -o /tmp/gradle.zip
-          unzip -qo /tmp/gradle.zip -d /tmp/gradle
-          /tmp/gradle/gradle-8.5/bin/gradle wrapper --gradle-version 8.5
-        fi
-        chmod +x gradlew
-        ls -la gradle/wrapper/
+        sdkmanager "platforms;android-34"
+        sdkmanager "build-tools;34.0.0"
+        sdkmanager "platform-tools"
+
+    - name: Download Gradle
+      run: |
+        curl -sL https://services.gradle.org/distributions/gradle-8.5-bin.zip -o /tmp/gradle.zip
+        unzip -qo /tmp/gradle.zip -d /tmp/gradle
+        echo "Gradle version:"
+        /tmp/gradle/gradle-8.5/bin/gradle --version
 
     - name: Download JBullet dependencies
       run: |
@@ -42,21 +39,49 @@ jobs:
         curl -sL "https://github.com/bersaty/SimulateDice/raw/master/app/libs/jbullet.jar" -o app/libs/jbullet.jar
         curl -sL "https://github.com/bersaty/SimulateDice/raw/master/app/libs/vecmath.jar" -o app/libs/vecmath.jar
         ls -la app/libs/
+        file app/libs/jbullet.jar
+        file app/libs/vecmath.jar
 
     - name: Accept Android Licenses
       run: yes | sdkmanager --licenses || true
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace
+    - name: Generate Gradle Wrapper
+      run: |
+        cd $GITHUB_WORKSPACE
+        /tmp/gradle/gradle-8.5/bin/gradle wrapper --gradle-version 8.5
+        chmod +x gradlew
+        ls -la gradle/wrapper/
+        echo "Verifying wrapper:"
+        ./gradlew --version
 
-    - name: List build outputs
-      run: find app/build/outputs -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
+    - name: Build Debug APK
+      run: |
+        ./gradlew assembleDebug --stacktrace 2>&1 | tee build-output.log
+        echo "=== Build exit code: $? ==="
+
+    - name: List all build outputs
+      if: always()
+      run: |
+        echo "=== Searching for APK files ==="
+        find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found anywhere"
+        echo "=== Listing app/build/outputs ==="
+        ls -laR app/build/outputs/ 2>/dev/null || echo "No outputs directory"
+        echo "=== Listing app/build ==="
+        ls -la app/build/ 2>/dev/null || echo "No build directory"
+
+    - name: Upload build log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log
+        path: build-output.log
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
         name: apk
         path: app/build/outputs/apk/**/*.apk
+        if-no-files-found: warn
 
   release:
     needs: build

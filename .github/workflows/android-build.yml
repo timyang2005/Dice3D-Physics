@@ -27,9 +27,7 @@ jobs:
         sdkmanager "platform-tools"
 
     - name: Create local.properties
-      run: |
-        echo "sdk.dir=$ANDROID_HOME" > local.properties
-        echo "ANDROID_HOME=$ANDROID_HOME"
+      run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
     - name: Download Gradle
       run: |
@@ -41,8 +39,6 @@ jobs:
         mkdir -p app/libs
         curl -sL "https://github.com/bersaty/SimulateDice/raw/master/app/libs/jbullet.jar" -o app/libs/jbullet.jar
         curl -sL "https://github.com/bersaty/SimulateDice/raw/master/app/libs/vecmath.jar" -o app/libs/vecmath.jar
-        file app/libs/jbullet.jar
-        file app/libs/vecmath.jar
 
     - name: Accept Android Licenses
       run: yes | sdkmanager --licenses || true
@@ -51,7 +47,6 @@ jobs:
       run: |
         /tmp/gradle/gradle-8.5/bin/gradle wrapper --gradle-version 8.5
         chmod +x gradlew
-        ./gradlew --version
 
     - name: Build Debug APK
       shell: bash
@@ -59,31 +54,26 @@ jobs:
         set -o pipefail
         ./gradlew assembleDebug --stacktrace 2>&1 | tee build-output.log
 
-    - name: Report build errors as annotations
+    - name: Report build errors
       if: failure()
       run: |
         if [ -f build-output.log ]; then
-          echo "=== EXTRACTING ERRORS FROM BUILD LOG ==="
-          grep -A 5 -i "^e:" build-output.log 2>/dev/null || true
-          echo "=== FAILURE SECTION ==="
-          grep -A 20 "^FAILURE" build-output.log 2>/dev/null || true
-          echo "=== WHAT WENT WRONG ==="
-          grep -A 20 "What went wrong" build-output.log 2>/dev/null || true
           echo "=== KOTLIN ERRORS ==="
-          grep -i "e: file://" build-output.log 2>/dev/null || true
-          echo "=== ERROR LINES ==="
-          grep -i "error" build-output.log 2>/dev/null | head -30 || true
-        fi
-
-    - name: Output full build log to summary
-      if: always()
-      run: |
-        if [ -f build-output.log ]; then
-          echo "## Build Output Log" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat build-output.log >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep "^e:" build-output.log 2>/dev/null | head -20 | while IFS= read -r line; do
+            echo "::error::$line"
+          done
+          echo "=== FAILURE SECTION ==="
+          grep -A 30 "^FAILURE" build-output.log 2>/dev/null | head -40 | while IFS= read -r line; do
+            echo "::error::$line"
+          done
+          echo "=== WHAT WENT WRONG ==="
+          grep -A 30 "What went wrong" build-output.log 2>/dev/null | head -40 | while IFS= read -r line; do
+            echo "::error::$line"
+          done
+          echo "=== ALL ERROR LINES ==="
+          grep -i "error" build-output.log 2>/dev/null | head -20 | while IFS= read -r line; do
+            echo "::error::$line"
+          done
         fi
 
     - name: Upload Debug APK

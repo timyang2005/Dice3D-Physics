@@ -54,10 +54,22 @@ jobs:
         echo "Verifying wrapper:"
         ./gradlew --version
 
-    - name: Build Debug APK
+    - name: Check project structure
       run: |
+        echo "=== Project files ==="
+        ls -la
+        echo "=== App module files ==="
+        ls -la app/
+        echo "=== Settings ===
+        cat settings.gradle.kts
+        echo "=== Root build ==="
+        cat build.gradle.kts
+
+    - name: Build Debug APK
+      shell: bash
+      run: |
+        set -o pipefail
         ./gradlew assembleDebug --stacktrace 2>&1 | tee build-output.log
-        echo "=== Build exit code: $? ==="
 
     - name: List all build outputs
       if: always()

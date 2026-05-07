@@ -9,6 +9,8 @@ import com.dice3d.physics.PhysicsWorld
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import javax.vecmath.Quat4f
+import kotlin.math.sin
+import kotlin.math.cos
 
 class DiceRenderer(private val context: Context, private val physicsWorld: PhysicsWorld, private val cameraController: CameraController) : GLSurfaceView.Renderer {
     private val diceModels = mutableMapOf<DiceType, DiceModel>()

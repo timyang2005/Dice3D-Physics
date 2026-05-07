@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -42,13 +42,13 @@ fun SettingsScreen(viewModel: SettingsViewModel = androidx.lifecycle.viewmodel.c
                     Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start=8.dp))
                 }
             }
-            HorizontalDivider(modifier = Modifier.padding(vertical=12.dp))
+            Divider(modifier = Modifier.padding(vertical=12.dp))
             Text("显示", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom=8.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) { Text("显示总和"); Text("在投掷结果中显示点数总和", style=MaterialTheme.typography.bodySmall, color=MaterialTheme.colorScheme.onSurfaceVariant) }
                 Switch(checked = showTotal, onCheckedChange = { viewModel.setShowTotal(it) })
             }
-            HorizontalDivider(modifier = Modifier.padding(vertical=12.dp))
+            Divider(modifier = Modifier.padding(vertical=12.dp))
             Text("反馈", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom=8.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) { Text("音效"); Text("启用投掷与碰撞音效", style=MaterialTheme.typography.bodySmall, color=MaterialTheme.colorScheme.onSurfaceVariant) }

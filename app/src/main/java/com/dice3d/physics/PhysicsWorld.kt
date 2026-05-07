@@ -36,7 +36,7 @@ class PhysicsWorld {
         )
         val solver = SequentialImpulseConstraintSolver()
         dynamicsWorld = DiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfig)
-        dynamicsWorld.gravity = Vector3f(0f, GRAVITY, 0f)
+        dynamicsWorld.setGravity(Vector3f(0f, GRAVITY, 0f))
         createBoundaries()
     }
 

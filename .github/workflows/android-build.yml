@@ -30,7 +30,6 @@ jobs:
       run: |
         curl -sL https://services.gradle.org/distributions/gradle-8.5-bin.zip -o /tmp/gradle.zip
         unzip -qo /tmp/gradle.zip -d /tmp/gradle
-        echo "Gradle version:"
         /tmp/gradle/gradle-8.5/bin/gradle --version
 
     - name: Download JBullet dependencies
@@ -47,11 +46,9 @@ jobs:
 
     - name: Generate Gradle Wrapper
       run: |
-        cd $GITHUB_WORKSPACE
         /tmp/gradle/gradle-8.5/bin/gradle wrapper --gradle-version 8.5
         chmod +x gradlew
         ls -la gradle/wrapper/
-        echo "Verifying wrapper:"
         ./gradlew --version
 
     - name: Check project structure
@@ -60,7 +57,7 @@ jobs:
         ls -la
         echo "=== App module files ==="
         ls -la app/
-        echo "=== Settings ===
+        echo "=== Settings ==="
         cat settings.gradle.kts
         echo "=== Root build ==="
         cat build.gradle.kts
@@ -78,8 +75,6 @@ jobs:
         find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found anywhere"
         echo "=== Listing app/build/outputs ==="
         ls -laR app/build/outputs/ 2>/dev/null || echo "No outputs directory"
-        echo "=== Listing app/build ==="
-        ls -la app/build/ 2>/dev/null || echo "No build directory"
 
     - name: Upload build log
       if: always()

@@ -26,6 +26,13 @@ jobs:
         sdkmanager "build-tools;34.0.0"
         sdkmanager "platform-tools"
 
+    - name: Create local.properties
+      run: |
+        echo "sdk.dir=$ANDROID_HOME" > local.properties
+        cat local.properties
+        echo "ANDROID_HOME=$ANDROID_HOME"
+        echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+
     - name: Download Gradle
       run: |
         curl -sL https://services.gradle.org/distributions/gradle-8.5-bin.zip -o /tmp/gradle.zip

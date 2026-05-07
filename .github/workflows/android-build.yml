@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [ main, master ]
 
-permissions:
-  contents: write
-  actions: read
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -51,22 +47,34 @@ jobs:
       run: yes | sdkmanager --licenses || true
 
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace
+      run: ./gradlew assembleDebug --stacktrace --info 2>&1 | tee build-debug.log
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
+      if: success()
       with:
         name: debug-apk
         path: app/build/outputs/apk/debug/*.apk
 
     - name: Build Release APK
-      run: ./gradlew assembleRelease --stacktrace
+      run: ./gradlew assembleRelease --stacktrace 2>&1 | tee build-release.log
+      if: success()
 
     - name: Upload Release APK
       uses: actions/upload-artifact@v4
+      if: success()
       with:
         name: release-apk
         path: app/build/outputs/apk/release/*.apk
+
+    - name: Upload Build Logs on Failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: build-logs
+        path: |
+          build-debug.log
+          build-release.log
 
   release:
     needs: build
@@ -79,7 +87,6 @@ jobs:
       with:
         name: release-apk
         path: ./apk
-        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: List APK files
       run: ls -la ./apk/ || echo "No APK files found"

@@ -4,6 +4,7 @@ import com.bulletphysics.collision.shapes.BoxShape
 import com.bulletphysics.collision.shapes.CollisionShape
 import com.bulletphysics.collision.shapes.ConvexHullShape
 import com.dice3d.model.DiceType
+import com.bulletphysics.util.ObjectArrayList
 import javax.vecmath.Vector3f
 import kotlin.math.cos
 import kotlin.math.sin
@@ -25,21 +26,27 @@ object DiceShapeFactory {
         }
     }
 
+    private fun toObjectArrayList(vertices: List<Vector3f>): ObjectArrayList<Vector3f> {
+        val list = ObjectArrayList<Vector3f>(vertices.size)
+        vertices.forEach { list.add(it) }
+        return list
+    }
+
     private fun createTetrahedron(): ConvexHullShape {
         val s = 0.7f
-        return ConvexHullShape(listOf(
+        return ConvexHullShape(toObjectArrayList(listOf(
             Vector3f(s, s, s), Vector3f(s, -s, -s),
             Vector3f(-s, s, -s), Vector3f(-s, -s, s)
-        ))
+        )))
     }
 
     private fun createOctahedron(): ConvexHullShape {
         val s = 0.7f
-        return ConvexHullShape(listOf(
+        return ConvexHullShape(toObjectArrayList(listOf(
             Vector3f(s, 0f, 0f), Vector3f(-s, 0f, 0f),
             Vector3f(0f, s, 0f), Vector3f(0f, -s, 0f),
             Vector3f(0f, 0f, s), Vector3f(0f, 0f, -s)
-        ))
+        )))
     }
 
     private fun createDodecahedron(): ConvexHullShape {
@@ -60,20 +67,20 @@ object DiceShapeFactory {
             floatArrayOf(phi, 0f, 1f / phi), floatArrayOf(phi, 0f, -1f / phi),
             floatArrayOf(-phi, 0f, 1f / phi), floatArrayOf(-phi, 0f, -1f / phi)
         ).forEach { v -> vertices.add(Vector3f(v[0] * scale, v[1] * scale, v[2] * scale)) }
-        return ConvexHullShape(vertices)
+        return ConvexHullShape(toObjectArrayList(vertices))
     }
 
     private fun createIcosahedron(): ConvexHullShape {
         val phi = (1f + sqrt(5f)) / 2f
         val scale = 0.35f
-        return ConvexHullShape(listOf(
+        return ConvexHullShape(toObjectArrayList(listOf(
             Vector3f(-1f * scale, phi * scale, 0f), Vector3f(1f * scale, phi * scale, 0f),
             Vector3f(-1f * scale, -phi * scale, 0f), Vector3f(1f * scale, -phi * scale, 0f),
             Vector3f(0f, -1f * scale, phi * scale), Vector3f(0f, 1f * scale, phi * scale),
             Vector3f(0f, -1f * scale, -phi * scale), Vector3f(0f, 1f * scale, -phi * scale),
             Vector3f(phi * scale, 0f, -1f * scale), Vector3f(phi * scale, 0f, 1f * scale),
             Vector3f(-phi * scale, 0f, -1f * scale), Vector3f(-phi * scale, 0f, 1f * scale)
-        ))
+        )))
     }
 
     private fun createPentagonalTrapezohedron(): ConvexHullShape {
@@ -88,6 +95,6 @@ object DiceShapeFactory {
         }
         vertices.add(Vector3f(0f, 1.2f * scale, 0f))
         vertices.add(Vector3f(0f, -1.2f * scale, 0f))
-        return ConvexHullShape(vertices)
+        return ConvexHullShape(toObjectArrayList(vertices))
     }
 }

@@ -10,10 +10,10 @@ class SoundManager(context: Context) {
     var enabled: Boolean = true
 
     init {
-        try { rollSound1 = soundPool.load(context.resources.getIdentifier("dice_roll_1","raw",context.packageName),1) } catch(_:Exception) {}
-        try { rollSound2 = soundPool.load(context.resources.getIdentifier("dice_roll_2","raw",context.packageName),1) } catch(_:Exception) {}
-        try { hitSound1 = soundPool.load(context.resources.getIdentifier("dice_hit_1","raw",context.packageName),1) } catch(_:Exception) {}
-        try { hitSound2 = soundPool.load(context.resources.getIdentifier("dice_hit_2","raw",context.packageName),1) } catch(_:Exception) {}
+        try { rollSound1 = soundPool.load(context, context.resources.getIdentifier("dice_roll_1","raw",context.packageName),1) } catch(_:Exception) {}
+        try { rollSound2 = soundPool.load(context, context.resources.getIdentifier("dice_roll_2","raw",context.packageName),1) } catch(_:Exception) {}
+        try { hitSound1 = soundPool.load(context, context.resources.getIdentifier("dice_hit_1","raw",context.packageName),1) } catch(_:Exception) {}
+        try { hitSound2 = soundPool.load(context, context.resources.getIdentifier("dice_hit_2","raw",context.packageName),1) } catch(_:Exception) {}
     }
 
     fun playRoll() { if(!enabled) return; try { soundPool.play(if(Math.random()>0.5) rollSound1 else rollSound2, 0.7f,0.7f,1,0,1.0f) } catch(_:Exception){} }

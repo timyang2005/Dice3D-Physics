@@ -2,7 +2,7 @@ package com.dice3d.physics
 
 import com.bulletphysics.linearmath.Transform
 import com.dice3d.model.DiceType
-import javax.vecmath.Matrix3f
+import javax.vecmath.Matrix4f
 import javax.vecmath.Vector3f
 import kotlin.math.cos
 import kotlin.math.sin
@@ -45,7 +45,7 @@ object DiceResultCalculator {
 
     fun calculateUpFace(diceType: DiceType, transform: Transform): Int {
         val upVector = Vector3f(0f, 1f, 0f)
-        val rotation = Matrix3f()
+        val rotation = Matrix4f()
         transform.getMatrix(rotation)
         val faceNormals = getFaceNormals(diceType)
         val faceValues = getFaceValues(diceType)

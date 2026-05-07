@@ -72,8 +72,8 @@ class DiceRigidBody(
         transform.setIdentity()
         transform.origin.set(Vector3f(x, y, z))
         body.setWorldTransform(transform)
-        body.linearVelocity = Vector3f(0f, 0f, 0f)
-        body.angularVelocity = Vector3f(0f, 0f, 0f)
+        body.setLinearVelocity(Vector3f(0f, 0f, 0f))
+        body.setAngularVelocity(Vector3f(0f, 0f, 0f))
         body.forceActivationState(RigidBody.WANTS_DEACTIVATION)
         settleFrameCount = 0
     }

@@ -47,34 +47,16 @@ jobs:
       run: yes | sdkmanager --licenses || true
 
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace --info 2>&1 | tee build-debug.log
+      run: ./gradlew assembleDebug --stacktrace
+
+    - name: List build outputs
+      run: find app/build/outputs -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
-      if: success()
       with:
-        name: debug-apk
-        path: app/build/outputs/apk/debug/*.apk
-
-    - name: Build Release APK
-      run: ./gradlew assembleRelease --stacktrace 2>&1 | tee build-release.log
-      if: success()
-
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v4
-      if: success()
-      with:
-        name: release-apk
-        path: app/build/outputs/apk/release/*.apk
-
-    - name: Upload Build Logs on Failure
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: build-logs
-        path: |
-          build-debug.log
-          build-release.log
+        name: apk
+        path: app/build/outputs/apk/**/*.apk
 
   release:
     needs: build
@@ -85,11 +67,11 @@ jobs:
     steps:
     - uses: actions/download-artifact@v4
       with:
-        name: release-apk
+        name: apk
         path: ./apk
 
     - name: List APK files
-      run: ls -la ./apk/ || echo "No APK files found"
+      run: find ./apk -name "*.apk" -type f
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
@@ -108,6 +90,6 @@ jobs:
           - 深色模式支持
           - 投掷历史记录与统计
           - 音效与触觉反馈
-        files: ./apk/*.apk
+        files: ./apk/**/*.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

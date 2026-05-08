@@ -43,7 +43,7 @@ data class DiceUiState(
 class DiceViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(DiceUiState())
     val uiState: StateFlow<DiceUiState> = _uiState.asStateFlow()
-    val physicsWorld = PhysicsWorld()
+    val physicsWorld: PhysicsWorld
     private val diceBodies = mutableListOf<DiceRigidBody>()
     private var physicsJob: Job? = null
     private var soundManager: SoundManager? = null
@@ -52,6 +52,7 @@ class DiceViewModel(application: Application) : AndroidViewModel(application) {
     private var historyDao: com.dice3d.data.db.RollHistoryDao? = null
 
     init {
+        physicsWorld = try { PhysicsWorld() } catch (_: Exception) { PhysicsWorld() }
         try { soundManager = SoundManager(application) } catch (_: Exception) {}
         try { hapticManager = HapticManager(application) } catch (_: Exception) {}
         try { historyDao = AppDatabase.getInstance(application).rollHistoryDao(); historyDaoInitialized = true } catch (_: Exception) {}
@@ -63,8 +64,8 @@ class DiceViewModel(application: Application) : AndroidViewModel(application) {
             if (diceBodies.isEmpty()) spawnDice()
             _uiState.value = _uiState.value.copy(isRolling = true, results = emptyList(), total = 0)
             physicsWorld.applyRandomImpulseToAll()
-            if (_uiState.value.soundEnabled) soundManager?.playRoll()
-            if (_uiState.value.hapticEnabled) hapticManager?.onRoll()
+            if (_uiState.value.soundEnabled) try { soundManager?.playRoll() } catch (_: Exception) {}
+            if (_uiState.value.hapticEnabled) try { hapticManager?.onRoll() } catch (_: Exception) {}
         } catch (_: Exception) {}
     }
 
@@ -77,29 +78,31 @@ class DiceViewModel(application: Application) : AndroidViewModel(application) {
     fun setDiceColor(color: Color) { updateDiceConfig(_uiState.value.diceConfig.copy(bodyColor = color, numberColor = color.computeContrastNumberColor())) }
     fun setShowTotal(show: Boolean) { _uiState.value = _uiState.value.copy(showTotal = show) }
     fun setSimulationSpeed(speed: Float) { _uiState.value = _uiState.value.copy(simulationSpeed = speed.coerceIn(0.1f, 5.0f)) }
-    fun setSoundEnabled(enabled: Boolean) { _uiState.value = _uiState.value.copy(soundEnabled = enabled); soundManager?.enabled = enabled }
-    fun setHapticEnabled(enabled: Boolean) { _uiState.value = _uiState.value.copy(hapticEnabled = enabled); hapticManager?.enabled = enabled }
+    fun setSoundEnabled(enabled: Boolean) { _uiState.value = _uiState.value.copy(soundEnabled = enabled); try { soundManager?.enabled = enabled } catch (_: Exception) {} }
+    fun setHapticEnabled(enabled: Boolean) { _uiState.value = _uiState.value.copy(hapticEnabled = enabled); try { hapticManager?.enabled = enabled } catch (_: Exception) {} }
     fun setDarkMode(darkMode: Boolean?) { _uiState.value = _uiState.value.copy(isDarkMode = darkMode) }
     fun applyGravitySensor(dx: Float, dy: Float, dz: Float) { try { physicsWorld.applyGravitySensor(dx, dy, dz) } catch (_: Exception) {} }
 
     private fun spawnDice() {
-        val config = _uiState.value.diceConfig
-        val shape = DiceShapeFactory.createShape(DiceType.D6)
-        for (i in 0 until config.count) {
-            val mass = 1f; val localInertia = Vector3f(0f,0f,0f)
-            shape.calculateLocalInertia(mass, localInertia)
-            val startTransform = Transform().apply { setIdentity(); origin.set(Vector3f((i-config.count/2f)*2.5f, 5f+i*2f, 0f)) }
-            val motionState = DefaultMotionState(startTransform)
-            val rbInfo = RigidBodyConstructionInfo(mass, motionState, shape, localInertia)
-            val body = RigidBody(rbInfo)
-            body.restitution = 0.3f; body.friction = 0.8f
-            body.forceActivationState(RigidBody.WANTS_DEACTIVATION)
-            val diceRigidBody = DiceRigidBody(DiceType.D6, body)
-            physicsWorld.addDice(diceRigidBody); diceBodies.add(diceRigidBody)
-        }
+        try {
+            val config = _uiState.value.diceConfig
+            val shape = DiceShapeFactory.createShape(DiceType.D6)
+            for (i in 0 until config.count) {
+                val mass = 1f; val localInertia = Vector3f(0f,0f,0f)
+                shape.calculateLocalInertia(mass, localInertia)
+                val startTransform = Transform().apply { setIdentity(); origin.set(Vector3f((i-config.count/2f)*2.5f, 5f+i*2f, 0f)) }
+                val motionState = DefaultMotionState(startTransform)
+                val rbInfo = RigidBodyConstructionInfo(mass, motionState, shape, localInertia)
+                val body = RigidBody(rbInfo)
+                body.restitution = 0.3f; body.friction = 0.8f
+                body.forceActivationState(RigidBody.WANTS_DEACTIVATION)
+                val diceRigidBody = DiceRigidBody(DiceType.D6, body)
+                physicsWorld.addDice(diceRigidBody); diceBodies.add(diceRigidBody)
+            }
+        } catch (_: Exception) {}
     }
 
-    private fun clearDice() { physicsWorld.clearAllDice(); diceBodies.clear() }
+    private fun clearDice() { try { physicsWorld.clearAllDice(); diceBodies.clear() } catch (_: Exception) {} }
 
     private fun saveRollResult(results: List<Int>) {
         if (!historyDaoInitialized) return
@@ -136,5 +139,5 @@ class DiceViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    override fun onCleared() { super.onCleared(); physicsJob?.cancel(); physicsWorld.destroy(); try { soundManager?.release() } catch (_: Exception) {} }
+    override fun onCleared() { super.onCleared(); physicsJob?.cancel(); try { physicsWorld.destroy() } catch (_: Exception) {}; try { soundManager?.release() } catch (_: Exception) {} }
 }

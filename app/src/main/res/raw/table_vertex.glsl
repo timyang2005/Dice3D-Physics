@@ -1,7 +1,5 @@
 uniform mat4 uMVPMatrix;
 attribute vec3 aPosition;
-varying vec3 vWorldPos;
 void main() {
     gl_Position = uMVPMatrix * vec4(aPosition, 1.0);
-    vWorldPos = aPosition;
 }

@@ -26,7 +26,6 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,14 +34,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dice3d.renderer.DiceGLSurfaceView
 import com.dice3d.renderer.DiceRenderer
-import com.dice3d.sensor.ShakeDetector
 import com.dice3d.ui.theme.MorandiRose
 import com.dice3d.ui.theme.MorandiSage
 import com.dice3d.ui.theme.MorandiBlue
@@ -55,15 +52,8 @@ import com.dice3d.viewmodel.DiceViewModel
 @Composable
 fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
     var showConfigSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    DisposableEffect(Unit) {
-        val shakeDetector = ShakeDetector(context) { viewModel.rollDice() }
-        try { shakeDetector.start() } catch (_: Exception) {}
-        onDispose { try { shakeDetector.stop() } catch (_: Exception) {} }
-    }
 
     if (showConfigSheet) {
         ModalBottomSheet(
@@ -158,7 +148,7 @@ fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
                     containerColor = MaterialTheme.colorScheme.primary,
                     elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
                 ) {
-                    Text(if (uiState.isRolling) "🎲" else "🎲", fontSize = 28.sp)
+                    Text("🎲", fontSize = 28.sp)
                 }
 
                 Spacer(modifier = Modifier.width(56.dp))

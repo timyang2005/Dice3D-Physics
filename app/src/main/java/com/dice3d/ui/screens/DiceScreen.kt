@@ -6,8 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,13 +40,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dice3d.model.DiceType
 import com.dice3d.renderer.DiceGLSurfaceView
 import com.dice3d.renderer.DiceRenderer
 import com.dice3d.sensor.ShakeDetector
+import com.dice3d.ui.theme.MorandiRose
+import com.dice3d.ui.theme.MorandiSage
+import com.dice3d.ui.theme.MorandiBlue
+import com.dice3d.ui.theme.MorandiSand
+import com.dice3d.ui.theme.MorandiSlate
+import com.dice3d.ui.theme.MorandiCream
 import com.dice3d.viewmodel.DiceViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
@@ -58,8 +61,8 @@ fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
 
     DisposableEffect(Unit) {
         val shakeDetector = ShakeDetector(context) { viewModel.rollDice() }
-        shakeDetector.start()
-        onDispose { shakeDetector.stop() }
+        try { shakeDetector.start() } catch (_: Exception) {}
+        onDispose { try { shakeDetector.stop() } catch (_: Exception) {} }
     }
 
     if (showConfigSheet) {
@@ -69,34 +72,15 @@ fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
             containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(bottom = 32.dp)) {
-                Text("骰子类型", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.height(8.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DiceType.entries.forEach { type ->
-                        val selected = uiState.diceConfig.diceType == type
-                        Box(modifier = Modifier.clickable { viewModel.setDiceType(type) }.background(
-                            if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                            RoundedCornerShape(8.dp)
-                        ).border(
-                            if (selected) 2.dp else 0.dp,
-                            if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                            RoundedCornerShape(8.dp)
-                        ).padding(horizontal = 16.dp, vertical = 8.dp)) {
-                            Text(type.displayName, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
                 Text("骰子数量: ${uiState.diceConfig.count}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(8.dp))
-                Slider(value = uiState.diceConfig.count.toFloat(), onValueChange = { viewModel.setDiceCount(it.toInt()) }, valueRange = 1f..10f, steps = 8, modifier = Modifier.fillMaxWidth(), colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.primary))
+                Slider(value = uiState.diceConfig.count.toFloat(), onValueChange = { viewModel.setDiceCount(it.toInt()) }, valueRange = 1f..6f, steps = 4, modifier = Modifier.fillMaxWidth(), colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.primary))
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("骰子颜色", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val colors = listOf(Color(0xFFE53935), Color(0xFF1E88E5), Color(0xFF43A047), Color(0xFFFB8C00), Color(0xFF8E24AA), Color.White, Color(0xFF212121))
+                    val colors = listOf(MorandiRose, MorandiSage, MorandiBlue, MorandiSand, MorandiSlate, MorandiCream, Color(0xFF4A4238))
                     colors.forEach { color ->
                         val selected = uiState.diceConfig.bodyColor == color
                         Box(modifier = Modifier.size(36.dp).clickable { viewModel.setDiceColor(color) }.background(color, CircleShape).border(
@@ -104,25 +88,6 @@ fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
                             if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                             CircleShape
                         ))
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("快速预设", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.height(8.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    viewModel.presets.forEach { preset ->
-                        val selected = uiState.diceConfig == preset.config
-                        Box(modifier = Modifier.clickable { viewModel.applyPreset(preset) }.background(
-                            if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                            RoundedCornerShape(8.dp)
-                        ).border(
-                            if (selected) 2.dp else 0.dp,
-                            if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                            RoundedCornerShape(8.dp)
-                        ).padding(horizontal = 12.dp, vertical = 6.dp)) {
-                            Text(preset.name, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
-                        }
                     }
                 }
             }
@@ -160,7 +125,7 @@ fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
                 )
             }
 
-            Text("${uiState.diceConfig.diceType.displayName} × ${uiState.diceConfig.count}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("D6 × ${uiState.diceConfig.count}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -193,7 +158,7 @@ fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
                     containerColor = MaterialTheme.colorScheme.primary,
                     elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp)
                 ) {
-                    Text(if (uiState.isRolling) "🔀" else "🎲", fontSize = 28.sp)
+                    Text(if (uiState.isRolling) "🎲" else "🎲", fontSize = 28.sp)
                 }
 
                 Spacer(modifier = Modifier.width(56.dp))

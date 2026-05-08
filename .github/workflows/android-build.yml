@@ -22,7 +22,7 @@ jobs:
 
     - name: Install Android SDK components
       run: |
-        sdkmanager "platforms;android-34"
+        sdkmanager "platforms;android-35"
         sdkmanager "build-tools;34.0.0"
         sdkmanager "platform-tools"
 
@@ -31,7 +31,7 @@ jobs:
 
     - name: Download Gradle
       run: |
-        curl -sL https://services.gradle.org/distributions/gradle-8.5-bin.zip -o /tmp/gradle.zip
+        curl -sL https://services.gradle.org/distributions/gradle-8.11.1-bin.zip -o /tmp/gradle.zip
         unzip -qo /tmp/gradle.zip -d /tmp/gradle
 
     - name: Download JBullet dependencies
@@ -45,7 +45,7 @@ jobs:
 
     - name: Generate Gradle Wrapper
       run: |
-        /tmp/gradle/gradle-8.5/bin/gradle wrapper --gradle-version 8.5
+        /tmp/gradle/gradle-8.11.1/bin/gradle wrapper --gradle-version 8.11.1
         chmod +x gradlew
 
     - name: Build Debug APK
@@ -98,10 +98,10 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v1.0.0
-        name: Release v1.0.0
+        tag_name: v1.1.0
+        name: Release v1.1.0
         body: |
-          3D 物理骰子模拟器 - 首个发布版本
+          3D 物理骰子模拟器 - 莫兰迪色系版本
         files: ./apk/**/*.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

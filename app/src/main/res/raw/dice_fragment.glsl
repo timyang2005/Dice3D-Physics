@@ -40,27 +40,27 @@ void main() {
         dotMask = max(circle(localUV, vec2(0.25, 0.25), dotRadius),
                       circle(localUV, vec2(0.75, 0.75), dotRadius));
     } else if (faceValue == 3.0) {
-        dotMask = max(circle(localUV, vec2(0.25, 0.25), dotRadius),
-                      circle(localUV, vec2(0.5, 0.5), dotRadius),
+        dotMask = max(max(circle(localUV, vec2(0.25, 0.25), dotRadius),
+                          circle(localUV, vec2(0.5, 0.5), dotRadius)),
                       circle(localUV, vec2(0.75, 0.75), dotRadius));
     } else if (faceValue == 4.0) {
-        dotMask = max(circle(localUV, vec2(0.25, 0.25), dotRadius),
-                      circle(localUV, vec2(0.75, 0.25), dotRadius),
-                      circle(localUV, vec2(0.25, 0.75), dotRadius),
-                      circle(localUV, vec2(0.75, 0.75), dotRadius));
+        dotMask = max(max(circle(localUV, vec2(0.25, 0.25), dotRadius),
+                          circle(localUV, vec2(0.75, 0.25), dotRadius)),
+                      max(circle(localUV, vec2(0.25, 0.75), dotRadius),
+                          circle(localUV, vec2(0.75, 0.75), dotRadius)));
     } else if (faceValue == 5.0) {
-        dotMask = max(circle(localUV, vec2(0.5, 0.5), dotRadius),
-                      circle(localUV, vec2(0.25, 0.25), dotRadius),
-                      circle(localUV, vec2(0.75, 0.25), dotRadius),
-                      circle(localUV, vec2(0.25, 0.75), dotRadius),
-                      circle(localUV, vec2(0.75, 0.75), dotRadius));
+        dotMask = max(max(max(circle(localUV, vec2(0.5, 0.5), dotRadius),
+                              circle(localUV, vec2(0.25, 0.25), dotRadius)),
+                          circle(localUV, vec2(0.75, 0.25), dotRadius)),
+                      max(circle(localUV, vec2(0.25, 0.75), dotRadius),
+                          circle(localUV, vec2(0.75, 0.75), dotRadius)));
     } else if (faceValue == 6.0) {
-        dotMask = max(circle(localUV, vec2(0.25, 0.2), dotRadius),
-                      circle(localUV, vec2(0.25, 0.5), dotRadius),
-                      circle(localUV, vec2(0.25, 0.8), dotRadius),
-                      circle(localUV, vec2(0.75, 0.2), dotRadius),
-                      circle(localUV, vec2(0.75, 0.5), dotRadius),
-                      circle(localUV, vec2(0.75, 0.8), dotRadius));
+        dotMask = max(max(max(circle(localUV, vec2(0.25, 0.2), dotRadius),
+                              circle(localUV, vec2(0.25, 0.5), dotRadius)),
+                          circle(localUV, vec2(0.25, 0.8), dotRadius)),
+                      max(max(circle(localUV, vec2(0.75, 0.2), dotRadius),
+                              circle(localUV, vec2(0.75, 0.5), dotRadius)),
+                          circle(localUV, vec2(0.75, 0.8), dotRadius)));
     }
 
     vec3 faceColor = mix(uDiceColor, uNumberColor, dotMask);

@@ -9,6 +9,7 @@ varying vec4 vAmbient;
 varying vec4 vDiffuse;
 varying vec4 vSpecular;
 varying vec2 vTextureCoord;
+varying vec3 vWorldPos;
 
 void pointLight(in vec3 normal, inout vec4 ambient, inout vec4 diffuse, inout vec4 specular, in vec3 lightLocation, in vec4 lightAmbient, in vec4 lightDiffuse, in vec4 lightSpecular) {
     ambient = lightAmbient;
@@ -28,6 +29,7 @@ void pointLight(in vec3 normal, inout vec4 ambient, inout vec4 diffuse, inout ve
 
 void main() {
     gl_Position = uMVPMatrix * vec4(aPosition, 1.0);
+    vWorldPos = (uMMatrix * vec4(aPosition, 1.0)).xyz;
     pointLight(normalize(aNormal), vAmbient, vDiffuse, vSpecular, uLightLocation, vec4(0.3,0.3,0.3,1.0), vec4(0.8,0.8,0.8,1.0), vec4(0.4,0.4,0.4,1.0));
     vTextureCoord = aTextureCoord;
 }

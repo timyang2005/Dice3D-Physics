@@ -26,6 +26,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,12 +35,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dice3d.renderer.DiceGLSurfaceView
 import com.dice3d.renderer.DiceRenderer
+import com.dice3d.sensor.ShakeDetector
 import com.dice3d.ui.theme.MorandiRose
 import com.dice3d.ui.theme.MorandiSage
 import com.dice3d.ui.theme.MorandiBlue
@@ -54,6 +57,7 @@ fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     var showConfigSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val context = LocalContext.current
 
     if (showConfigSheet) {
         ModalBottomSheet(
@@ -106,6 +110,21 @@ fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
             },
             modifier = Modifier.fillMaxSize()
         )
+
+        DisposableEffect(Unit) {
+            var shakeDetector: ShakeDetector? = null
+            try {
+                shakeDetector = ShakeDetector(context) {
+                    try { viewModel.rollDice() } catch (_: Exception) {}
+                }
+                shakeDetector.start()
+            } catch (_: Exception) {
+                // Sensor not available, continue without shake
+            }
+            onDispose {
+                try { shakeDetector?.stop() } catch (_: Exception) {}
+            }
+        }
 
         Column(
             modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(bottom = 16.dp),

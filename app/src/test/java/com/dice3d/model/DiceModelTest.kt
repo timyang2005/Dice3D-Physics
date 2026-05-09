@@ -72,4 +72,38 @@ class DiceConfigTest {
         val numberColor = darkColor.computeContrastNumberColor()
         assertTrue(numberColor.red > 0.5f)
     }
+
+    @Test
+    fun `default scale is 1`() {
+        val config = DiceConfig()
+        assertEquals(1.0f, config.scale, 0.001f)
+    }
+
+    @Test
+    fun `scale can be set via copy`() {
+        val config = DiceConfig()
+        val scaled = config.copy(scale = 2.5f)
+        assertEquals(2.5f, scaled.scale, 0.001f)
+    }
+
+    @Test
+    fun `scale preserves other fields when copied`() {
+        val config = DiceConfig(count = 3, scale = 2.0f)
+        val newConfig = config.copy(diceType = DiceType.D20)
+        assertEquals(DiceType.D20, newConfig.diceType)
+        assertEquals(3, newConfig.count)
+        assertEquals(2.0f, newConfig.scale, 0.001f)
+    }
+
+    @Test
+    fun `default body color is white`() {
+        val config = DiceConfig()
+        assertEquals(androidx.compose.ui.graphics.Color.White, config.bodyColor)
+    }
+
+    @Test
+    fun `default number color is dark for white body`() {
+        val config = DiceConfig()
+        assertTrue(config.numberColor.red < 0.5f)
+    }
 }

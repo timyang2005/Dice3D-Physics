@@ -26,6 +26,12 @@ object DiceShapeFactory {
         }
     }
 
+    fun createShape(diceType: DiceType, scale: Float): CollisionShape {
+        val baseShape = createShape(diceType)
+        baseShape.setLocalScaling(Vector3f(scale, scale, scale))
+        return baseShape
+    }
+
     private fun toObjectArrayList(vertices: List<Vector3f>): ObjectArrayList<Vector3f> {
         val list = ObjectArrayList<Vector3f>(vertices.size)
         vertices.forEach { list.add(it) }

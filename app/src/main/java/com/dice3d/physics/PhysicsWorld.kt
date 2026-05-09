@@ -20,9 +20,9 @@ class PhysicsWorld {
 
     companion object {
         private const val GRAVITY = -30f
-        private const val WALL_X = 12f
-        private const val WALL_Z = 8f
-        private const val WALL_Y = 20f
+        internal const val WALL_X = 15f
+        internal const val WALL_Z = 10f
+        internal const val WALL_Y = 20f
         private const val FLOOR_RESTITUTION = 0.3f
         private const val FLOOR_FRICTION = 0.8f
     }

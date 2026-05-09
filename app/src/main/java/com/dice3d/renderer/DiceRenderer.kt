@@ -74,14 +74,15 @@ class DiceRenderer(private val context: Context, private val physicsWorld: Physi
         GLES30.glEnable(GLES30.GL_BLEND); GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
         val bodyColor = floatArrayOf(diceConfig.bodyColor.red, diceConfig.bodyColor.green, diceConfig.bodyColor.blue)
         val numColor = floatArrayOf(diceConfig.numberColor.red, diceConfig.numberColor.green, diceConfig.numberColor.blue)
+        val scale = diceConfig.scale
         val snapshot = physicsWorld.diceBodies.toList()
         for (dice in snapshot) {
             val model = diceModels[dice.diceType] ?: continue
             if (model.vertexCount == 0) continue
             model.setColors(bodyColor, numColor)
             val transform = dice.getTransform()
-            MatrixState.pushMatrix(); applyPhysicsTransform(transform); model.draw(); MatrixState.popMatrix()
-            MatrixState.pushMatrix(); applyPhysicsTransform(transform); shadowRenderer?.draw(model.verticesBuffer, model.vertexCount); MatrixState.popMatrix()
+            MatrixState.pushMatrix(); applyPhysicsTransform(transform); MatrixState.scale(scale, scale, scale); model.draw(); MatrixState.popMatrix()
+            MatrixState.pushMatrix(); applyPhysicsTransform(transform); MatrixState.scale(scale, scale, scale); shadowRenderer?.draw(model.verticesBuffer, model.vertexCount); MatrixState.popMatrix()
         }
     }
 

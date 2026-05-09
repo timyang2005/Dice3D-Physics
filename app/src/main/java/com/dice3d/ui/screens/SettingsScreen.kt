@@ -1,5 +1,6 @@
 package com.dice3d.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
@@ -18,10 +21,12 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.dice3d.viewmodel.SettingsViewModel
 
@@ -32,6 +37,20 @@ fun SettingsScreen(viewModel: SettingsViewModel = androidx.lifecycle.viewmodel.c
     val showTotal by viewModel.showTotal.collectAsState()
     val soundEnabled by viewModel.soundEnabled.collectAsState()
     val hapticEnabled by viewModel.hapticEnabled.collectAsState()
+    val logExportStatus by viewModel.logExportStatus.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(logExportStatus) {
+        when (val status = logExportStatus) {
+            is SettingsViewModel.LogExportStatus.Success -> {
+                Toast.makeText(context, "日志已导出", Toast.LENGTH_SHORT).show()
+            }
+            is SettingsViewModel.LogExportStatus.Error -> {
+                Toast.makeText(context, "导出失败: ${status.message}", Toast.LENGTH_SHORT).show()
+            }
+            else -> {}
+        }
+    }
 
     Scaffold(topBar = { TopAppBar(title = { Text("设置") }) }) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
@@ -58,6 +77,16 @@ fun SettingsScreen(viewModel: SettingsViewModel = androidx.lifecycle.viewmodel.c
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) { Text("触觉反馈"); Text("碰撞时触发震动", style=MaterialTheme.typography.bodySmall, color=MaterialTheme.colorScheme.onSurfaceVariant) }
                 Switch(checked = hapticEnabled, onCheckedChange = { viewModel.setHapticEnabled(it) })
+            }
+            Divider(modifier = Modifier.padding(vertical=12.dp))
+            Text("调试", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom=8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) { Text("导出日志"); Text("将应用日志导出到文件", style=MaterialTheme.typography.bodySmall, color=MaterialTheme.colorScheme.onSurfaceVariant) }
+                if (logExportStatus is SettingsViewModel.LogExportStatus.Exporting) {
+                    CircularProgressIndicator(modifier = Modifier.height(24.dp))
+                } else {
+                    Button(onClick = { viewModel.exportLog() }) { Text("导出") }
+                }
             }
             Spacer(modifier = Modifier.height(32.dp))
         }

@@ -76,6 +76,7 @@ class DiceViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setDiceCount(count: Int) { updateDiceConfig(_uiState.value.diceConfig.copy(count = count.coerceIn(1, 6))) }
     fun setDiceColor(color: Color) { updateDiceConfig(_uiState.value.diceConfig.copy(bodyColor = color, numberColor = color.computeContrastNumberColor())) }
+    fun setDiceScale(scale: Float) { updateDiceConfig(_uiState.value.diceConfig.copy(scale = scale.coerceIn(0.5f, 5.0f))) }
     fun setShowTotal(show: Boolean) { _uiState.value = _uiState.value.copy(showTotal = show) }
     fun setSimulationSpeed(speed: Float) { _uiState.value = _uiState.value.copy(simulationSpeed = speed.coerceIn(0.1f, 5.0f)) }
     fun setSoundEnabled(enabled: Boolean) { _uiState.value = _uiState.value.copy(soundEnabled = enabled); try { soundManager?.enabled = enabled } catch (_: Exception) {} }
@@ -86,7 +87,7 @@ class DiceViewModel(application: Application) : AndroidViewModel(application) {
     private fun spawnDice() {
         try {
             val config = _uiState.value.diceConfig
-            val shape = DiceShapeFactory.createShape(DiceType.D6)
+            val shape = DiceShapeFactory.createShape(DiceType.D6, config.scale)
             for (i in 0 until config.count) {
                 val mass = 1f; val localInertia = Vector3f(0f,0f,0f)
                 shape.calculateLocalInertia(mass, localInertia)

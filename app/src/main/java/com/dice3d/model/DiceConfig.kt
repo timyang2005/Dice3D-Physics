@@ -10,6 +10,7 @@ fun Color.computeContrastNumberColor(): Color {
 data class DiceConfig(
     val diceType: DiceType = DiceType.D6,
     val count: Int = 1,
-    val bodyColor: Color = Color(0xFFE53935),
-    val numberColor: Color = Color.White
+    val bodyColor: Color = Color.White,
+    val numberColor: Color = Color(0xFF1A1A1A),
+    val scale: Float = 1.0f
 )

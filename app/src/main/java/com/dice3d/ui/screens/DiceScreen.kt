@@ -80,6 +80,11 @@ fun DiceScreen(viewModel: DiceViewModel = viewModel()) {
                         ))
                     }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("骰子大小: ${String.format("%.1f", uiState.diceConfig.scale)}×", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(8.dp))
+                Slider(value = uiState.diceConfig.scale, onValueChange = { viewModel.setDiceScale(it) }, valueRange = 0.5f..5.0f, modifier = Modifier.fillMaxWidth(), colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.primary))
             }
         }
     }

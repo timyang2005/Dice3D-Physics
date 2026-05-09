@@ -3,6 +3,7 @@ package com.dice3d.physics
 import com.bulletphysics.dynamics.RigidBody
 import com.bulletphysics.linearmath.Transform
 import com.dice3d.model.DiceType
+import javax.vecmath.Quat4f
 import javax.vecmath.Vector3f
 
 class DiceRigidBody(
@@ -10,13 +11,13 @@ class DiceRigidBody(
     val body: RigidBody
 ) {
     companion object {
-        private const val SETTLE_LINEAR_THRESHOLD = 0.05f
-        private const val SETTLE_ANGULAR_THRESHOLD = 0.05f
-        private const val SETTLE_FRAMES_REQUIRED = 30
-        private const val IMPULSE_UP_MIN = 15f
-        private const val IMPULSE_UP_MAX = 30f
-        private const val IMPULSE_LATERAL_RANGE = 8f
-        private const val ANGULAR_IMPULSE_RANGE = 10f
+        internal const val SETTLE_LINEAR_THRESHOLD = 0.15f
+        internal const val SETTLE_ANGULAR_THRESHOLD = 0.15f
+        internal const val SETTLE_FRAMES_REQUIRED = 10
+        internal const val IMPULSE_UP_MIN = 12f
+        internal const val IMPULSE_UP_MAX = 25f
+        internal const val IMPULSE_LATERAL_RANGE = 15f
+        internal const val ANGULAR_IMPULSE_RANGE = 15f
     }
 
     private var settleFrameCount = 0
@@ -37,6 +38,18 @@ class DiceRigidBody(
 
     fun applyRandomImpulse() {
         if (!body.isActive) body.activate()
+
+        val transform = Transform()
+        body.getWorldTransform(transform)
+        val quat = Quat4f(
+            (Math.random().toFloat() - 0.5f) * 2f,
+            (Math.random().toFloat() - 0.5f) * 2f,
+            (Math.random().toFloat() - 0.5f) * 2f,
+            (Math.random().toFloat() - 0.5f) * 2f
+        )
+        quat.normalize()
+        transform.setRotation(quat)
+        body.setWorldTransform(transform)
 
         val upImpulse = IMPULSE_UP_MIN + Math.random().toFloat() * (IMPULSE_UP_MAX - IMPULSE_UP_MIN)
         val lateralX = (Math.random().toFloat() - 0.5f) * 2f * IMPULSE_LATERAL_RANGE

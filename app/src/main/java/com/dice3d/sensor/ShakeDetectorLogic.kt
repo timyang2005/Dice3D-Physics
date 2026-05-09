@@ -9,7 +9,7 @@ class ShakeDetectorLogic {
     private var shakeCount = 0
 
     companion object {
-        private const val SHAKE_THRESHOLD = 12f
+        private const val SHAKE_THRESHOLD = 20f
         private const val SHAKE_COOLDOWN_MS = 800L
         private const val MIN_INTERVAL_MS = 50L
         private const val SHAKES_REQUIRED = 2

@@ -28,50 +28,50 @@ class ShakeDetectorLogicTest {
     @Test
     fun `single shake does not trigger - requires two shakes`() {
         detector.processReading(floatArrayOf(0f, 9.8f, 0f), 1000L)
-        val result = detector.processReading(floatArrayOf(5f, 15f, 5f), 1060L)
+        val result = detector.processReading(floatArrayOf(6f, 20f, 6f), 1060L)
         assertFalse("Single shake should not trigger - requires two shakes", result)
     }
 
     @Test
     fun `two shakes within cooldown triggers shake`() {
         detector.processReading(floatArrayOf(0f, 9.8f, 0f), 1000L)
-        detector.processReading(floatArrayOf(5f, 15f, 5f), 1060L)
-        val result = detector.processReading(floatArrayOf(5f, 15f, 5f), 1200L)
+        detector.processReading(floatArrayOf(6f, 20f, 6f), 1060L)
+        val result = detector.processReading(floatArrayOf(6f, 20f, 6f), 1200L)
         assertTrue("Two shakes within cooldown should trigger shake", result)
     }
 
     @Test
     fun `readings too close in time are ignored`() {
         detector.processReading(floatArrayOf(0f, 9.8f, 0f), 1000L)
-        val result = detector.processReading(floatArrayOf(5f, 15f, 5f), 1010L)
+        val result = detector.processReading(floatArrayOf(6f, 20f, 6f), 1010L)
         assertFalse("Readings too close in time should be ignored", result)
     }
 
     @Test
     fun `shake cooldown prevents rapid re-triggering`() {
         detector.processReading(floatArrayOf(0f, 9.8f, 0f), 1000L)
-        detector.processReading(floatArrayOf(5f, 15f, 5f), 1060L)
-        detector.processReading(floatArrayOf(5f, 15f, 5f), 1200L)
-        val result = detector.processReading(floatArrayOf(5f, 15f, 5f), 1300L)
+        detector.processReading(floatArrayOf(6f, 20f, 6f), 1060L)
+        detector.processReading(floatArrayOf(6f, 20f, 6f), 1200L)
+        val result = detector.processReading(floatArrayOf(6f, 20f, 6f), 1300L)
         assertFalse("Shake cooldown should prevent rapid re-triggering", result)
     }
 
     @Test
     fun `shake can trigger again after cooldown`() {
         detector.processReading(floatArrayOf(0f, 9.8f, 0f), 1000L)
-        detector.processReading(floatArrayOf(5f, 15f, 5f), 1060L)
-        detector.processReading(floatArrayOf(5f, 15f, 5f), 1200L)
-        val result = detector.processReading(floatArrayOf(5f, 15f, 5f), 2500L)
+        detector.processReading(floatArrayOf(6f, 20f, 6f), 1060L)
+        detector.processReading(floatArrayOf(6f, 20f, 6f), 1200L)
+        val result = detector.processReading(floatArrayOf(6f, 20f, 6f), 2500L)
         assertTrue("Shake should trigger again after cooldown", result)
     }
 
     @Test
     fun `reset clears shake count`() {
         detector.processReading(floatArrayOf(0f, 9.8f, 0f), 1000L)
-        detector.processReading(floatArrayOf(5f, 15f, 5f), 1060L)
+        detector.processReading(floatArrayOf(6f, 20f, 6f), 1060L)
         detector.reset()
         detector.processReading(floatArrayOf(0f, 9.8f, 0f), 2000L)
-        val result = detector.processReading(floatArrayOf(5f, 15f, 5f), 2060L)
+        val result = detector.processReading(floatArrayOf(6f, 20f, 6f), 2060L)
         assertFalse("After reset, single shake should not trigger", result)
     }
 }
